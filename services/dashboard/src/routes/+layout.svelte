@@ -39,7 +39,7 @@
           <Sidebar.MenuItem>
             <Sidebar.MenuButton>
               {#snippet child({ props })}
-                <a {...props} href="/">
+                <a {...props} href="/projects">
                   <SquareChartGantt/>
                   <span>Projects</span>
                 </a>
@@ -49,7 +49,7 @@
           <Sidebar.MenuItem>
             <Sidebar.MenuButton>
               {#snippet child({ props })}
-                <a {...props} href="/">
+                <a {...props} href="/sources">
                   <GitFork/>
                   <span>Sources</span>
                 </a>
@@ -74,8 +74,10 @@
       </Sidebar.Group>
     </Sidebar.Content>
   </Sidebar.Root>
-  <Sidebar.Inset class="p-4">
+  <Sidebar.Inset class="p-4 gap-2">
     <Sidebar.Trigger/>
-    {@render children()}
+    <div class="h-full overflow-auto">
+      {@render children()}
+    </div>
   </Sidebar.Inset>
 </Sidebar.Provider>
