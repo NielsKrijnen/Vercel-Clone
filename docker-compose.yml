@@ -1,0 +1,61 @@
+networks:
+  test-net:
+    driver: bridge
+
+services:
+  api:
+    build: ./services/api
+    container_name: api
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - redis
+      - traefik
+    ports:
+      - "8000:8000"
+    networks:
+      - test-net
+
+  dashboard:
+    build: ./services/dashboard
+    container_name: dashboard
+    depends_on:
+      - api
+      - redis
+      - traefik
+    ports:
+      - "3000:3000"
+    networks:
+      - test-net
+
+  worker:
+    build: ./services/worker
+    container_name: worker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./examples:/usr/src/app/examples
+    depends_on:
+      - redis
+    networks:
+      - test-net
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    networks:
+      - test-net
+
+  traefik:
+    image: traefik:v3.1
+    container_name: traefik
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - test-net
