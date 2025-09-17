@@ -1,0 +1,72 @@
+networks:
+  test-net:
+    driver: bridge
+
+services:
+  api:
+    build: ./services/api
+    container_name: api
+    volumes:
+      - ./services/api:/usr/src/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - redis
+      - traefik
+    command: sh -c "npm install && npx tsc && node dist/index.js"
+    environment:
+      - NODE_ENV=development
+    networks:
+      - test-net
+
+  dashboard:
+    build: ./services/dashboard
+    container_name: dashboard
+    volumes:
+      - ./services/dashboard:/usr/src/app
+    depends_on:
+      - api
+      - redis
+      - traefik
+    command: sh -c "npm install && npm run dev"
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+    networks:
+      - test-net
+
+  worker:
+    build: ./services/worker
+    container_name: worker
+    volumes:
+      - ./services/worker:/usr/src/app
+      - ./examples:/usr/src/app/examples
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - redis
+    command: sh -c "npm install && npx tsc && node dist/index.js"
+    environment:
+      - NODE_ENV=development
+    networks:
+      - test-net
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    networks:
+      - test-net
+
+  traefik:
+    image: traefik:v3.1
+    container_name: traefik
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - test-net
