@@ -10,6 +10,11 @@ const buildQueue = new Queue("builds", {
   }
 })
 
+app.get("/server", async (_, res) => {
+  res.writeHead(200)
+  res.end()
+})
+
 app.post("/deploy", async (_, res) => {
   const id = Date.now().toString()
   await buildQueue.add("build", { id })
